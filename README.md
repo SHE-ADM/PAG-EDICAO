@@ -1,2 +1,2 @@
-# PAG-EDI-O
+# Pag-Edicao
 Crud de Pagamentos
