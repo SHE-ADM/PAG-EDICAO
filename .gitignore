@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+apps/*/node_modules/
+
+# build output
+apps/react-app/dist/
+apps/next-app/.next/
+apps/next-app/out/
+build/
+
+# env files
+.env
+.env.local
+.env.*.local
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/settings.json
+
+# Claude Code (local-only settings)
+.claude/settings.local.json
