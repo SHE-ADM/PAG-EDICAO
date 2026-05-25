@@ -62,12 +62,52 @@ exposes Route Handlers and has no real UI pages.
 - Type-checking is folded into `next build`; there is no separate `typecheck`
   script — running `tsc --noEmit` outside of Next will miss `.next/types/**`.
 
+### REST conventions (mandatory)
+
+Route Handlers under `app/api/**` must follow REST principles strictly:
+
+- **Resources are plural nouns** in the URL: `/api/payments`, `/api/users/{id}`.
+  Never verbs (`/api/getPayment`, `/api/createUser`).
+- **HTTP methods carry semantics**: `GET` read (safe, idempotent), `POST` create,
+  `PUT` full replace (idempotent), `PATCH` partial update, `DELETE` remove
+  (idempotent). Never accept `POST` for reads or `GET` with side effects.
+- **Status codes are specific**: `200` OK, `201` Created (return `Location`
+  header pointing at the new resource), `204` No Content (for `DELETE` and
+  empty `PUT`/`PATCH`), `400` malformed request, `401` unauthenticated,
+  `403` forbidden, `404` not found, `409` conflict, `422` validation failure,
+  `5xx` server errors. Do not return `200` on errors.
+- **Stateless**: every request carries its own auth (header/token). No
+  server-side session storage; do not rely on prior request state.
+- **No RPC-style endpoints**: model side effects as state transitions on a
+  resource (e.g. `POST /api/payments/{id}/refunds` over `POST /api/refundPayment`).
+- **Errors have a consistent JSON shape** — define it before the first error
+  path ships and reuse it across all routes.
+
 ## Web (`apps/web/`)
 
 - Plain Vite + React 19 SPA. Entry: `src/main.tsx`, root component: `src/App.tsx`.
 - Build is `tsc -b && vite build`; the project-references-style `tsc -b`
   expects `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json` to stay
   in sync.
+
+### Frontend conventions (mandatory)
+
+- **Atomic Design** for component organization under `src/components/`:
+  `atoms/` (buttons, inputs, labels), `molecules/` (form rows, cards),
+  `organisms/` (headers, complex panels), `templates/` (page layouts).
+  Pages under `src/pages/` compose templates and organisms — they should not
+  contain raw atoms or layout primitives.
+- **Tailwind for styling** — all visual styling uses Tailwind utility classes.
+  No CSS Modules, no styled-components, no inline `style={{}}` when a Tailwind
+  class can express the same thing. Tailwind is not yet installed in
+  `apps/web/`; add it before introducing styled components. Use `cn()`
+  (`clsx` + `tailwind-merge`) for conditional classes.
+- **Every component has a test** covering its essential use: it mounts with
+  required props, renders its primary content, and reacts to its main
+  interaction (click, change, submit). Tests live alongside the component
+  (`Button.tsx` + `Button.test.tsx`). No test runner is installed yet — pick
+  one (Vitest + Testing Library is the natural fit for Vite) before the first
+  styled component lands; this rule applies retroactively once a runner exists.
 
 ## pnpm workspace
 
@@ -85,3 +125,19 @@ may fail at runtime (the user gets `[ERR_PNPM_IGNORED_BUILDS]` on install).
 - All work lands on the `Features` branch. Short-lived `feat/<x>` or `fix/<x>`
   branches branch off `Features` and merge back into `Features`.
 - `.claude/settings.local.json` is gitignored at the repo root — never stage it.
+
+### Commit messages — Conventional Commits (mandatory)
+
+All commits follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+- Format: `type(scope): subject` — subject in imperative mood, no trailing period,
+  ~72 chars max.
+- Allowed types: `feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `perf`,
+  `ci`, `build`, `style`, `revert`.
+- Scope is the app or area touched: `api`, `web`, `workspace`, `deps`, or a
+  feature name. Omit `()` when the change is repo-wide and doesn't fit a scope.
+- Breaking changes: append `!` after type/scope (`feat(api)!: ...`) and add a
+  `BREAKING CHANGE: <explanation>` footer.
+- Existing history already follows this pattern (e.g.
+  `feat(api): scaffold...`, `refactor(workspace): rename react-app to web...`)
+  — keep it consistent.
