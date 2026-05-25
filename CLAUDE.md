@@ -33,8 +33,12 @@ Run from the repo root (all scripts live in the root `package.json`):
 | `pnpm start:api` | `next start` on port 3001 (production runtime) |
 | `pnpm preview:web` | Vite production preview |
 | `pnpm lint:api` / `lint:web` / `pnpm lint` | ESLint |
+| `pnpm test:web` | Vitest one-shot (`vitest run`) — used in CI/precommit |
+| `pnpm --filter web test` | Vitest watch mode (interactive) |
+| `pnpm test` | All packages with `test:run` (currently only `web` defines one) |
 
-No test runner is configured in either app — do not assume `pnpm test` exists.
+Only `apps/web` has a test runner (Vitest + Testing Library). `apps/api` has no
+test setup yet — do not assume `pnpm --filter api test` exists.
 
 ## Version caveats — read before writing code
 
@@ -97,17 +101,21 @@ Route Handlers under `app/api/**` must follow REST principles strictly:
   `organisms/` (headers, complex panels), `templates/` (page layouts).
   Pages under `src/pages/` compose templates and organisms — they should not
   contain raw atoms or layout primitives.
-- **Tailwind for styling** — all visual styling uses Tailwind utility classes.
-  No CSS Modules, no styled-components, no inline `style={{}}` when a Tailwind
-  class can express the same thing. Tailwind is not yet installed in
-  `apps/web/`; add it before introducing styled components. Use `cn()`
-  (`clsx` + `tailwind-merge`) for conditional classes.
+- **Tailwind v4 for styling** — all visual styling uses Tailwind utility
+  classes. No CSS Modules, no styled-components, no inline `style={{}}` when a
+  Tailwind class can express the same thing. Tailwind is wired via the
+  `@tailwindcss/vite` plugin and a single `@import "tailwindcss"` at the top of
+  `src/index.css` — there is intentionally no `tailwind.config.js`; customize
+  via CSS `@theme` blocks. Use `cn()` from `src/lib/utils.ts` (built on `clsx`
+  + `tailwind-merge`) for conditional classes.
 - **Every component has a test** covering its essential use: it mounts with
   required props, renders its primary content, and reacts to its main
   interaction (click, change, submit). Tests live alongside the component
-  (`Button.tsx` + `Button.test.tsx`). No test runner is installed yet — pick
-  one (Vitest + Testing Library is the natural fit for Vite) before the first
-  styled component lands; this rule applies retroactively once a runner exists.
+  (`Button.tsx` + `Button.test.tsx`). Stack: Vitest + Testing Library
+  (`@testing-library/react`, `@testing-library/user-event`,
+  `@testing-library/jest-dom`) running in `jsdom` with `globals: true`, so
+  `describe`/`it`/`expect` are available without imports. Setup file:
+  `src/test/setup.ts`. See `src/App.test.tsx` for the reference pattern.
 
 ## pnpm workspace
 
