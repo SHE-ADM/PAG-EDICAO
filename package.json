@@ -1,0 +1,19 @@
+{
+  "name": "pag-edicao",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.1.2",
+  "scripts": {
+    "dev:react": "pnpm --filter react-app dev",
+    "build:react": "pnpm --filter react-app build",
+    "preview:react": "pnpm --filter react-app preview",
+    "lint:react": "pnpm --filter react-app lint",
+    "dev:next": "pnpm --filter next-app dev",
+    "build:next": "pnpm --filter next-app build",
+    "start:next": "pnpm --filter next-app start",
+    "lint:next": "pnpm --filter next-app lint",
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint"
+  }
+}
