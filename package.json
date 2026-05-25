@@ -12,6 +12,10 @@
     "build:next": "pnpm --filter next-app build",
     "start:next": "pnpm --filter next-app start",
     "lint:next": "pnpm --filter next-app lint",
+    "dev:api": "pnpm --filter api dev",
+    "build:api": "pnpm --filter api build",
+    "start:api": "pnpm --filter api start",
+    "typecheck:api": "pnpm --filter api typecheck",
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint"
